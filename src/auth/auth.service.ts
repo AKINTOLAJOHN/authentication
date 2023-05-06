@@ -10,6 +10,7 @@ import * as argon from 'argon2'
 export class AuthService {
 
     constructor(
+        
         private prisma : PrismaService,
 
         private jwt : JwtService,

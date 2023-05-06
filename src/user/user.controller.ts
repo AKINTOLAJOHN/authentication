@@ -10,29 +10,30 @@ import { Request } from 'express';
 export class UserController {
 
     constructor(
+
         private userService : UserService
+        
     ){}
 
     
     @Patch('recover')
-    recover(
-        @Body('email') email : EmailDto,
-        
-        @Req()  req : Request){
+    recover(@Body('email') email : EmailDto, @Req()  req : Request){
 
-            const hosts = req.headers.host
+        const hosts = req.headers.host
         
         return this.userService.recover(email, hosts)
+
     }
 
     @Get('reset/:token')
     getReset(){
+
         return this.userService.getReset()
+
     }
     
     @Patch('reset/:token')
-    reset(@Param('id', ParseIntPipe) token: string,
-        @Body() passwordDto : ChangeInDto,){
+    reset(@Param('token', ParseIntPipe) token: string, @Body() passwordDto : ChangeInDto,){
 
         return this.userService.reset(passwordDto, token)
 
@@ -40,13 +41,7 @@ export class UserController {
     
     @Patch('change/password')
     @UseGuards(AuthGuard)
-    changPassword(
-
-        @Body() passwordDto : ChangeInDto,
-
-        @getUser('email') email : string,
-
-    ){
+    changPassword(@Body() passwordDto : ChangeInDto, @getUser('email') email : string){
 
         return this.userService.changPassword(email, passwordDto)
 
@@ -54,13 +49,7 @@ export class UserController {
 
     @Patch('change/detail')
     @UseGuards(AuthGuard)
-    updateInfo(
-
-        @Body() info : EditUserDto,
-
-        @getUser('email') email : string,
-
-    ){
+    updateInfo(@Body() info : EditUserDto, @getUser('email') email : string,){
 
         return this.userService.updateInfo(email, info)
 

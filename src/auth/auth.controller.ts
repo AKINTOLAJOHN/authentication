@@ -6,7 +6,9 @@ import { AuthDto, AuthInDto } from './dto';
 export class AuthController {
 
     constructor(
+
         private authService : AuthService
+
     ){}
 
     @HttpCode(HttpStatus.OK)
@@ -21,6 +23,7 @@ export class AuthController {
     signup(@Body() dto : AuthDto){
         
         return this.authService.signup(dto)
+        
     }
 
 

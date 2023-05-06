@@ -9,11 +9,17 @@ import { MailController } from 'src/mail/mail.controller';
 
 @Module({
   imports : [
+    
     ConfigModule.forRoot({
+
       isGlobal : true
+
     }),
+
   ],
-  providers: [UserService, AuthService,MailService],
+
+  providers: [UserService, AuthService, MailService],
+
   controllers: [UserController, MailController]
 })
 export class UserModule {}
