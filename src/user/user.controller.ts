@@ -1,9 +1,10 @@
-import { Body, Controller, Patch, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, ParseIntPipe, Patch, Post, Req, UseGuards } from '@nestjs/common';
 import  { UserService } from './user.service'
 import { AuthGuard } from './../auth/guard/index';
 import { getUser } from 'src/auth/decorator';
 import { Users } from '@prisma/client';
-import { ChangeInDto, EditUserDto } from 'src/auth/dto';
+import { ChangeInDto, EditUserDto, EmailDto } from 'src/auth/dto';
+import { Request } from 'express';
 
 @Controller('user')
 export class UserController {
@@ -13,15 +14,28 @@ export class UserController {
     ){}
 
     
-    @Post('recover')
-    recover(){
+    @Patch('recover')
+    recover(
+        @Body('email') email : EmailDto,
         
-        return this.userService.recover()
+        @Req()  req : Request){
+
+            const hosts = req.headers.host
+        
+        return this.userService.recover(email, hosts)
+    }
+
+    @Get('reset/:token')
+    getReset(){
+        return this.userService.getReset()
     }
     
     @Patch('reset/:token')
-    reset(){
-        return this.userService.reset()
+    reset(@Param('id', ParseIntPipe) token: string,
+        @Body() passwordDto : ChangeInDto,){
+
+        return this.userService.reset(passwordDto, token)
+
     }
     
     @Patch('change/password')

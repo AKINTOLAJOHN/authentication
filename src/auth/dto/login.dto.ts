@@ -1,5 +1,5 @@
 import { Injectable } from "@nestjs/common"
-import { Equals, IsEmail,  IsNotEmpty, IsOptional, IsString, IsStrongPassword, Matches } from "class-validator"
+import { IsEmail,  IsNotEmpty, IsOptional, IsString, IsStrongPassword, } from "class-validator"
 
 @Injectable()
 export class AuthInDto{
@@ -35,4 +35,7 @@ export class EditUserDto {
     @IsString()
     @IsOptional()
     lastName: string;
-  }
+}
+
+
+

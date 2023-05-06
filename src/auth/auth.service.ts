@@ -24,11 +24,14 @@ export class AuthService {
 
         const user = await this.validateUser(email)
 
-        if(!user)
+        if(!user){
+
             throw new ForbiddenException(
 
                 'Credentials incorrect',
             )
+
+        }
 
         const pwMatches = await argon.verify(
 
@@ -36,12 +39,15 @@ export class AuthService {
 
         )
 
-        if (!pwMatches)
+        if (!pwMatches){
+            
             throw new ForbiddenException(
 
                 'Credentials incorrect',
 
             )
+
+        }
 
         return this.signtoken(user.id, user.email);
         
@@ -61,7 +67,7 @@ export class AuthService {
 
         const hash = await argon.hash(password);
 
-        const user = await this.prisma.users.create({
+        await this.prisma.users.create({
 
                 data : {
 
@@ -76,7 +82,7 @@ export class AuthService {
                 }
             })
     
-            return this.signtoken(user.id, user.email);
+        throw new HttpException('success', HttpStatus.OK);
     
 
     }

@@ -22,3 +22,12 @@ export class AuthDto{
     email : string
 
 }
+
+
+export class EmailDto{
+  
+    @IsEmail()
+    @IsNotEmpty()
+    email : string
+
+}

@@ -3,10 +3,9 @@ import { UserService } from './user.service';
 import { UserController } from './user.controller';
 import { ConfigModule } from '@nestjs/config';
 import { AuthService } from 'src/auth/auth.service';
-import SecretGenerator from 'src/auth/otp/secret-generator';
-import OtpGenerator from 'src/auth/otp/otp-generator';
-import OtpValidator from 'src/auth/otp/otp-validator';
 import { AuthGuard } from './../auth/guard/index';
+import { MailService } from 'src/mail/mail.service';
+import { MailController } from 'src/mail/mail.controller';
 
 @Module({
   imports : [
@@ -14,7 +13,8 @@ import { AuthGuard } from './../auth/guard/index';
       isGlobal : true
     }),
   ],
-  providers: [UserService, AuthService,SecretGenerator, OtpGenerator, OtpValidator],
-  controllers: [UserController, ]
+  providers: [UserService, AuthService,MailService],
+  controllers: [UserController, MailController]
 })
 export class UserModule {}
+

@@ -1,46 +1,171 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { ForbiddenException, HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import * as argon from 'argon2';
-import { ChangeInDto, EditUserDto } from 'src/auth/dto';
+import { ChangeInDto, EditUserDto, EmailDto } from 'src/auth/dto';
 import { AuthService } from 'src/auth/auth.service';
-import SecretGenerator from 'src/auth/otp/secret-generator';
-import OtpGenerator from 'src/auth/otp/otp-generator';
-import OtpValidator from 'src/auth/otp/otp-validator';
 import { PrismaService } from 'src/prisma/prisma.service';
+import * as crypto from 'crypto';
+import { MailService } from 'src/mail/mail.service';
 
 @Injectable()
 export class UserService {
     constructor (
-        private otpValidator : OtpValidator,
 
-        private  prisma : PrismaService
-    ){
+        private authservice : AuthService,
 
+        private  prisma : PrismaService,
+
+        private mailservice : MailService
+
+    ){}
+
+    async getReset(){
+
+        return 'getReset'
     }
 
-    async validateToken(secret: string, token: string): Promise<any> {
-        const result = this.otpValidator.validateOtp(secret, token);
-        return result;
-      }
+    async recover(emailAddress,hosts){
 
-    async activate(){
+        const user = this.authservice.validateUser(emailAddress)
 
-        return 'activate'
+        if(!user){
+            
+            throw new ForbiddenException(
+    
+                'Credentials incorrect',
+    
+            )
+
+        }
+
+        const resetPasswordToken = await crypto.randomBytes(64).toString('hex')
+
+        const resetPasswordExpires = Date.now() + 360000
+        
+        await this.prisma.users.update({
+
+            where : {
+
+                id : (await user).id,
+
+            },
+            data: {
+
+                resetPasswordToken,
+
+                resetPasswordExpires
+
+            }
+
+        });
+
+        let link = `http://${hosts}/user/reset/${resetPasswordToken}`
+
+        let email =  (await user).email
+
+        const subject = 'Request to Reset Password ✔'
+
+        const body =  `
+
+        <div>Reset Password</div>
+
+        <div
+          class="container"
+          style="max-width: 90%; margin: auto; padding-top: 20px"
+        >
+
+        <div>Dear user, <br>
+        You are trying to reset the password linked with your account.</div><br>
+
+          <p> follow this link ${link} </p>
+  
+          <p style="margin-bottom: 30px;">tThe verification code will be valid for 30 minutes. Please do not share your code with anyone. </b></p>
+  
+        </div>` 
+
+        await this.mailservice.sendMail(email,subject, body)
+        
     }
 
-    async recover(){
+    async reset(password : ChangeInDto, token: string){
 
-        return 'recover'
-    }
+        const verify = await this.prisma.users.findFirst({
+            where: {
+              
+                resetPasswordToken : token
+              
+            },
 
-    async reset(){
-        return 'reset'
+          });
+
+          if(!verify){
+
+            throw new ForbiddenException(
+    
+                'Credentials incorrect',
+    
+            )
+
+          }
+
+          let timed = Date.now()
+          
+          if (verify.resetPasswordExpires < timed){
+              
+            throw new ForbiddenException(
+    
+                'Credentials incorrect',
+    
+            )
+              
+        }
+        const hash = await argon.hash(password.password)
+
+        await this.prisma.users.update({
+            where: {
+
+              email : verify.email
+
+            },
+            data: {
+
+                hash,
+                
+                resetPasswordExpires : null,
+
+                resetPasswordToken : null
+
+            },
+
+          });
+
+          let email =   verify.email
+
+          const subject = `Reset Password success ✔`
+  
+          const body =  `
+  
+          <div>Reset Password success</div>
+  
+          <div
+            class="container"
+            style="max-width: 90%; margin: auto; padding-top: 20px"
+          >
+  
+          <div>Dear user, <br>
+          Your reset password linked with your account. is success</div><br>
+
+    
+          </div>` 
+  
+          await this.mailservice.sendMail(email,subject, body)
+
     }
 
     async changPassword(email : string, password : ChangeInDto){
 
         const hash = await argon.hash(password.password)
 
-        const user = await this.prisma.users.update({
+        await this.prisma.users.update({
             where: {
 
               email 
@@ -61,7 +186,8 @@ export class UserService {
 
     async  updateInfo(email : string, info : EditUserDto){
 
-        const user = await this.prisma.users.update({
+        await this.prisma.users.update({
+
             where: {
 
               email 
