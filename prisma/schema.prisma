@@ -31,7 +31,7 @@ model Users {
 
   profileImage String?
 
-  resetPasswordExpires BigInt?
+  resetPasswordExpires String?
 
 }
 

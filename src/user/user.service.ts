@@ -39,7 +39,7 @@ export class UserService {
 
         const resetPasswordToken = await crypto.randomBytes(64).toString('hex')
 
-        const resetPasswordExpires = Date.now() + 360000
+        const resetPasswordExpires = `${Date.now() + 360000}`
         
         await this.prisma.users.update({
 
@@ -89,6 +89,7 @@ export class UserService {
     async reset(password : ChangeInDto, token: string){
 
         const verify = await this.prisma.users.findFirst({
+
             where: {
               
                 resetPasswordToken : token
@@ -107,11 +108,13 @@ export class UserService {
 
           }
 
-          let timed = Date.now()
+          const dates = parseInt(verify.resetPasswordExpires)
           
-          if (verify.resetPasswordExpires < timed){
+          if (verify.resetPasswordExpires == null || dates < Date.now() ){
               
             throw new ForbiddenException(
+
+              dates,
     
                 'Credentials incorrect',
     

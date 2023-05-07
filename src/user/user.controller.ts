@@ -5,6 +5,7 @@ import { getUser } from 'src/auth/decorator';
 import { Users } from '@prisma/client';
 import { ChangeInDto, EditUserDto, EmailDto } from 'src/auth/dto';
 import { Request } from 'express';
+import { parse } from 'querystring';
 
 @Controller('user')
 export class UserController {
@@ -33,8 +34,9 @@ export class UserController {
     }
     
     @Patch('reset/:token')
-    reset(@Param('token', ParseIntPipe) token: string, @Body() passwordDto : ChangeInDto,){
+    reset(@Param('token') token: string, @Body() passwordDto : ChangeInDto,){
 
+        console.log(token)
         return this.userService.reset(passwordDto, token)
 
     }
